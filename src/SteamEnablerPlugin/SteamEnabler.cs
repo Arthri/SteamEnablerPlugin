@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Terraria;
 using Terraria.Social;
@@ -19,6 +19,15 @@ namespace SteamEnablerPlugin
 
         public SteamEnabler(Main game) : base(game)
         {
+        }
+
+        public override void Initialize()
+        {
+            if (Program.LaunchParameters.TryGetValue("-steam", out string _))
+            {
+                SocialAPI.Shutdown();
+                SocialAPI.Initialize(SocialMode.Steam);
+            }
         }
     }
 }
