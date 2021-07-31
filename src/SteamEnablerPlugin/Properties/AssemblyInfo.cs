@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SteamEnablerPlugin")]
 [assembly: AssemblyDescription("Enables Steam on OTAPI")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Arthri")]
 [assembly: AssemblyProduct("SteamEnablerPlugin")]
 [assembly: AssemblyCopyright("Copyright © Arthri 2021")]
 [assembly: AssemblyTrademark("")]
