@@ -41,6 +41,11 @@ namespace SteamEnablerPlugin
 
         public override void Initialize()
         {
+            Console.WriteLine("    SteamEnablerPlugin  Copyright (C) 2021  Arthri");
+            Console.WriteLine("    This program comes with ABSOLUTELY NO WARRANTY; see SteamEnablerPlugin.COPYING for details");
+            Console.WriteLine("    This is free software, and you are welcome to redistribute it");
+            Console.WriteLine("    under certain conditions; see SteamEnablerPlugin.COPYING for details.");
+
             if (Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
