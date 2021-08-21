@@ -2,7 +2,7 @@
 SteamEnablerPlugin is a plugin that turns on Steam for OTAPI.
 
 # Setup
-1. Get the [latest](/Arthri/SteamEnablerPlugin/releases/latest) release
+1. Get the [latest](https://github.com/Arthri/SteamEnablerPlugin/releases/latest) release
 2. Place it in the `ServerPlugins` folder
 3. Locate Terraria's directory
 4. Copy `CSteamworks.dll`, `steam_api.dll`, and `steam_appid.txt` to the same directory as `TerrariaServer.exe`(the TShock one)
