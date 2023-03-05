@@ -22,7 +22,7 @@ namespace SteamEnablerPlugin
 
         public override void Initialize()
         {
-            if (Program.LaunchParameters.TryGetValue("-steam", out string _))
+            if (Terraria.Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
                 SocialAPI.Initialize(SocialMode.Steam);
