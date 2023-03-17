@@ -43,6 +43,8 @@ namespace SteamEnablerPlugin
             }
 
             Initialize_Steam();
+
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) => SocialAPI.Shutdown();
         }
 
         // Steam-related code must run in a separate method to prevent JIT
