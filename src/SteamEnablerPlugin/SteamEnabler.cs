@@ -22,6 +22,8 @@ namespace SteamEnablerPlugin
 
         public override void Initialize()
         {
+            Console.WriteLine($"Initializing {Name}");
+
             if (Terraria.Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
