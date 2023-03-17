@@ -45,6 +45,23 @@ namespace SteamEnablerPlugin
             if (Terraria.Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
+
+                // Detects if Steam is inaccessible.
+                // The Terraria client checks for this, but the error is given
+                // in the form of a MessageBox which is ignored by OTAPI.
+                if (!Steamworks.SteamAPI.Init())
+                {
+                    Console.WriteLine("Could not initialize Steam.");
+                    Console.WriteLine("Possible reasons include but are not limited to");
+                    Console.WriteLine("  The Steam client isn't running;");
+                    Console.WriteLine("  The Steam client isn't running in the same OS user context;");
+                    Console.WriteLine("  The Steam client couldn't find Terraria's app ID. Please add a \"steam_appid.txt\" file with the contents \"105600\" in the server's working directory;");
+                    Console.WriteLine("  The \"steam_appid.txt\" file exists but contains the wrong content;");
+                    Console.WriteLine("  The Steam client doesn't have access to run Terraria;");
+                    Console.WriteLine("  For more information, visit https://partner.steamgames.com/doc/api/steam_api#SteamAPI_Init.");
+                    Environment.Exit(0);
+                }
+
                 SocialAPI.Initialize(SocialMode.Steam);
             }
         }
