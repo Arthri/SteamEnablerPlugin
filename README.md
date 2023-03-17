@@ -1,5 +1,5 @@
 # SteamEnablerPlugin
-SteamEnablerPlugin is a plugin that turns on Steam for OTAPI.
+SteamEnablerPlugin is a plugin that turns on Steam for OTAPI. Supported and tested for Windows. Untested support for Linux and MacOS.
 
 # Setup
 1. Get the [latest](https://github.com/Arthri/SteamEnablerPlugin/releases/latest) release.
