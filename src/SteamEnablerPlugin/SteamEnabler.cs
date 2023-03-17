@@ -42,6 +42,14 @@ namespace SteamEnablerPlugin
                 }
             }
 
+            Initialize_Steam();
+        }
+
+        // Steam-related code must run in a separate method to prevent JIT
+        // from compiling Steamworks.NET and trying to find a possibly
+        // missing steam_api64.dll
+        private static void Initialize_Steam()
+        {
             if (Terraria.Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
