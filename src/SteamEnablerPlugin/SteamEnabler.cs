@@ -24,6 +24,24 @@ namespace SteamEnablerPlugin
         {
             Console.WriteLine($"Initializing {Name}");
 
+            {
+                using var fs = new FileStream("steam_appid.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                if (fs.Length <= 0)
+                {
+                    using var writer = new StreamWriter(fs);
+                    writer.Write("105600");
+                }
+                else
+                {
+                    using var reader = new StreamReader(fs);
+                    var appId = reader.ReadToEnd();
+                    if (appId != "105600")
+                    {
+                        Console.WriteLine("\"steam_appid.txt\" contains unexpected content");
+                    }
+                }
+            }
+
             if (Terraria.Program.LaunchParameters.TryGetValue("-steam", out string _))
             {
                 SocialAPI.Shutdown();
