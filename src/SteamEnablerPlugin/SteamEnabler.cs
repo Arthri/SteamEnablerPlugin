@@ -1,6 +1,9 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using System.Reflection;
 using Terraria;
 using Terraria.Social;
+using Terraria.Social.Steam;
 using TerrariaApi.Server;
 
 namespace SteamEnablerPlugin
@@ -24,6 +27,50 @@ namespace SteamEnablerPlugin
         {
             Console.WriteLine($"Initializing {Name}");
 
+            if (OperatingSystem.IsWindows())
+            {
+                if (!File.Exists("steam_api64.dll"))
+                {
+                    Download_SteamworksNET(out string? path);
+                    File.Copy(
+                        Path.Combine(path, "Windows-x64", "steam_api64.dll"),
+                        "steam_api64.dll"
+                    );
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                if (!Directory.Exists("steam_api.bundle"))
+                {
+                    Download_SteamworksNET(out string? path);
+                    var bundlePath = Path.Combine(path, "OSX-Linux-x64", "steam_api.bundle");
+                    foreach (string directory in Directory.GetDirectories(bundlePath, "*", SearchOption.AllDirectories))
+                    {
+                        Directory.CreateDirectory(directory.Replace(path, Environment.CurrentDirectory));
+                    }
+
+                    foreach (string file in Directory.GetFiles(bundlePath, "*", SearchOption.AllDirectories))
+                    {
+                        File.Copy(file, file.Replace(path, Environment.CurrentDirectory), true);
+                    }
+                }
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                if (!File.Exists("libsteam_api.so"))
+                {
+                    Download_SteamworksNET(out string? path);
+                    File.Copy(
+                        Path.Combine(path, "OSX-Linux-x64", "libsteam_api.so"),
+                        "libsteam_api.so"
+                    );
+                }
+            }
+            else
+            {
+                Console.WriteLine("UNSUPPORTED OPERATING SYSTEM");
+            }
+
             {
                 using var fs = new FileStream("steam_appid.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                 if (fs.Length <= 0)
@@ -45,6 +92,75 @@ namespace SteamEnablerPlugin
             Initialize_Steam();
 
             AppDomain.CurrentDomain.ProcessExit += (sender, args) => SocialAPI.Shutdown();
+        }
+
+        /// <summary>
+        /// Downloads Steamworks.NET to the temporary folder and returns its path.
+        /// </summary>
+        /// <param name="path">The path to the unzipped Steamworks.NET files.</param>
+        private static void Download_SteamworksNET(out string path)
+        {
+            var terrariaAssembly = typeof(Projectile).Assembly;
+            var terrariaDependencies = terrariaAssembly.GetReferencedAssemblies();
+            var dependency_SteamworksNET = terrariaDependencies.FirstOrDefault(static d => d.Name == "Steamworks.NET");
+            if (dependency_SteamworksNET == null)
+            {
+                Console.WriteLine("Unsupported Terraria version (Terraria doesn't depend on Steamworks.NET.dll).");
+                Environment.Exit(0);
+                path = null;
+            }
+            else
+            {
+                var version_SteamworksNET = dependency_SteamworksNET.Version;
+                if (version_SteamworksNET == null)
+                {
+                    Console.WriteLine("Steamworks.NET version is undefined. Assuming 20.1.0.0.");
+                    version_SteamworksNET = new Version(20, 1, 0, 0);
+                }
+                if (version_SteamworksNET != new Version(20, 1, 0, 0))
+                {
+                    Console.WriteLine($"Unsupported Steamworks.NET version \"{version_SteamworksNET}\". Experimentally downloading version nonetheless.");
+                }
+
+                var downloadFolder = Path.Combine(Path.GetTempPath(), "Steamworks.NET");
+                Directory.CreateDirectory(downloadFolder);
+                var unzippedSteamworksNETPath = Path.Combine(downloadFolder, $"{version_SteamworksNET}");
+                if (Directory.Exists(unzippedSteamworksNETPath))
+                {
+                    path = unzippedSteamworksNETPath;
+                }
+
+                var zippedSteamworksNETPath = $"{unzippedSteamworksNETPath}.zip";
+                if (File.Exists(zippedSteamworksNETPath))
+                {
+                    ZipFile.ExtractToDirectory(zippedSteamworksNETPath, unzippedSteamworksNETPath);
+
+                    path = unzippedSteamworksNETPath;
+                }
+
+                var downloadVersion = version_SteamworksNET.Revision == 0
+                    ? version_SteamworksNET.ToString(3)
+                    : version_SteamworksNET.ToString()
+                    ;
+
+                using var fs = new FileStream(
+                    zippedSteamworksNETPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None
+                );
+                using var ns = new HttpClient()
+                    .GetAsync($"https://github.com/rlabrecque/Steamworks.NET/releases/download/{downloadVersion}/Steamworks.NET-Standalone_{downloadVersion}.zip")
+                    .ConfigureAwait(false).GetAwaiter().GetResult()
+                    .EnsureSuccessStatusCode()
+                    .Content
+                    .ReadAsStream()
+                    ;
+                ns.CopyToAsync(fs, new CancellationTokenSource(10000).Token);
+                new ZipArchive(fs, ZipArchiveMode.Read, true).ExtractToDirectory(unzippedSteamworksNETPath);
+
+                path = unzippedSteamworksNETPath;
+            }
         }
 
         // Steam-related code must run in a separate method to prevent JIT
