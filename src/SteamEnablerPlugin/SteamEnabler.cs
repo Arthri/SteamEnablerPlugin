@@ -104,8 +104,9 @@ namespace SteamEnablerPlugin
             if (dependency_SteamworksNET == null)
             {
                 Console.WriteLine("Unsupported Terraria version (Terraria doesn't depend on Steamworks.NET.dll).");
-                Environment.Exit(0);
+                Environment.Exit(1);
                 path = null;
+                return;
             }
             else
             {
@@ -126,6 +127,7 @@ namespace SteamEnablerPlugin
                 if (Directory.Exists(unzippedSteamworksNETPath))
                 {
                     path = unzippedSteamworksNETPath;
+                    return;
                 }
 
                 var zippedSteamworksNETPath = $"{unzippedSteamworksNETPath}.zip";
@@ -141,6 +143,17 @@ namespace SteamEnablerPlugin
                     {
                         Console.WriteLine($"Unable to extract preexisting zip \"{zippedSteamworksNETPath}\". Redownloading zip file.");
                         Console.WriteLine(e.ToString());
+                        try
+                        {
+                            File.Delete(zippedSteamworksNETPath);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Unable to delete corrupted zip file.");
+                            Environment.Exit(1);
+                            path = null;
+                            return;
+                        }
                     }
                 }
 
