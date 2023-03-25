@@ -131,9 +131,17 @@ namespace SteamEnablerPlugin
                 var zippedSteamworksNETPath = $"{unzippedSteamworksNETPath}.zip";
                 if (File.Exists(zippedSteamworksNETPath))
                 {
-                    ZipFile.ExtractToDirectory(zippedSteamworksNETPath, unzippedSteamworksNETPath);
-
-                    path = unzippedSteamworksNETPath;
+                    try
+                    {
+                        ZipFile.ExtractToDirectory(zippedSteamworksNETPath, unzippedSteamworksNETPath);
+                        path = unzippedSteamworksNETPath;
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Unable to extract preexisting zip \"{zippedSteamworksNETPath}\". Redownloading zip file.");
+                        Console.WriteLine(e.ToString());
+                    }
                 }
 
                 var downloadVersion = version_SteamworksNET.Revision == 0
@@ -141,23 +149,45 @@ namespace SteamEnablerPlugin
                     : version_SteamworksNET.ToString()
                     ;
 
-                using var fs = new FileStream(
-                    zippedSteamworksNETPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None
-                );
-                using var ns = new HttpClient()
-                    .GetAsync($"https://github.com/rlabrecque/Steamworks.NET/releases/download/{downloadVersion}/Steamworks.NET-Standalone_{downloadVersion}.zip")
-                    .ConfigureAwait(false).GetAwaiter().GetResult()
-                    .EnsureSuccessStatusCode()
-                    .Content
-                    .ReadAsStream()
-                    ;
-                ns.CopyToAsync(fs, new CancellationTokenSource(10000).Token);
-                new ZipArchive(fs, ZipArchiveMode.Read, true).ExtractToDirectory(unzippedSteamworksNETPath);
+                try
+                {
+                    using var fs = new FileStream(
+                        zippedSteamworksNETPath,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.None
+                    );
+                    using var ns = new HttpClient()
+                        .GetAsync($"https://github.com/rlabrecque/Steamworks.NET/releases/download/{downloadVersion}/Steamworks.NET-Standalone_{downloadVersion}.zip")
+                        .ConfigureAwait(false).GetAwaiter().GetResult()
+                        .EnsureSuccessStatusCode()
+                        .Content
+                        .ReadAsStream()
+                        ;
+                    ns.CopyToAsync(fs, new CancellationTokenSource(10000).Token);
+                    new ZipArchive(fs, ZipArchiveMode.Read, true).ExtractToDirectory(unzippedSteamworksNETPath);
 
-                path = unzippedSteamworksNETPath;
+                    path = unzippedSteamworksNETPath;
+                }
+                catch
+                {
+                    Console.WriteLine("Unable to download zip.");
+                    try
+                    {
+                        File.Delete(zippedSteamworksNETPath);
+                    }
+                    catch
+                    {
+                    }
+                    try
+                    {
+                        Directory.Delete(unzippedSteamworksNETPath);
+                    }
+                    catch
+                    {
+                    }
+                    throw;
+                }
             }
         }
 
