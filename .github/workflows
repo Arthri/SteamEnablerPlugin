@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  release:
+    types: [ created, edited ]
+
+
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: write
+
+
+
+jobs:
+  build_release:
+    if: github.event.sender != ''
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Build Project
+        run: dotnet build -c Release
+
+      - name: Update Release with Binaries
+        run: |-
+          curl \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/octet-stream" \
+            ${{ github.event.release.upload_url }}
+            --data-binary "@./src/SteamEnablerPlugin/bin/Release/net6.0/SteamEnablerPlugin.dll"
