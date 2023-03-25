@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Reflection;
 using Terraria;
 using Terraria.Social;
-using Terraria.Social.Steam;
 using TerrariaApi.Server;
 
 namespace SteamEnablerPlugin
