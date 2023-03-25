@@ -2,7 +2,7 @@ name: Build Release
 
 on:
   release:
-    types: [ created, edited ]
+    types: [ published ]
 
 
 
@@ -17,7 +17,6 @@ permissions:
 
 jobs:
   build_release:
-    if: github.event.sender != ''
     runs-on: ubuntu-22.04
     timeout-minutes: 2
     steps:
