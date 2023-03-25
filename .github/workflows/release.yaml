@@ -43,5 +43,5 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/octet-stream" \
-            ${{ github.event.release.upload_url }}?name=SteamEnablerPlugin.dll&label=Release \
+            https://uploads.github.com/repos/${{ github.event.repository }}/releases/${{ github.event.release.id }}/assets?name=SteamEnablerPlugin.dll&label=Release \
             --data-binary "@./src/SteamEnablerPlugin/bin/Release/net6.0/SteamEnablerPlugin.dll"
