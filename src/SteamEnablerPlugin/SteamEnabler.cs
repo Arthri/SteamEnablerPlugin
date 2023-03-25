@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Reflection;
 using Terraria;
+using Terraria.Net.Sockets;
 using Terraria.Social;
 using TerrariaApi.Server;
 
@@ -23,6 +24,9 @@ namespace SteamEnablerPlugin
 
         public override void Initialize()
         {
+            On.Terraria.Net.Sockets.SocialSocket.Terraria_Net_Sockets_ISocket_AsyncReceive += Terraria_Net_Sockets_SocialSocket__Terraria_Net_Sockets_ISocket_AsyncReceive;
+            On.Terraria.Net.Sockets.SocialSocket.Terraria_Net_Sockets_ISocket_AsyncSend += Terraria_Net_Sockets_SocialSocket__Terraria_Net_Sockets_ISocket_AsyncSend;
+
             Console.WriteLine($"Initializing {Name}");
 
             if (OperatingSystem.IsWindows())
@@ -90,6 +94,35 @@ namespace SteamEnablerPlugin
             Initialize_Steam();
 
             AppDomain.CurrentDomain.ProcessExit += (sender, args) => SocialAPI.Shutdown();
+        }
+
+        private void Terraria_Net_Sockets_SocialSocket__Terraria_Net_Sockets_ISocket_AsyncReceive(
+            On.Terraria.Net.Sockets.SocialSocket.orig_Terraria_Net_Sockets_ISocket_AsyncReceive orig,
+            SocialSocket self,
+            byte[] data,
+            int offset,
+            int size,
+            SocketReceiveCallback callback,
+            object state
+        )
+        {
+            // UPDATE TODO: Has the vanilla code changed?
+            Task.Run(() => self.ReadCallback(data, offset, size, callback, state));
+        }
+
+        private void Terraria_Net_Sockets_SocialSocket__Terraria_Net_Sockets_ISocket_AsyncSend(
+            On.Terraria.Net.Sockets.SocialSocket.orig_Terraria_Net_Sockets_ISocket_AsyncSend orig,
+            SocialSocket self,
+            byte[] data,
+            int offset,
+            int size,
+            SocketSendCallback callback,
+            object state
+        )
+        {
+            // UPDATE TODO: Has the vanilla code changed?
+            SocialAPI.Network.Send(self._remoteAddress, data, size);
+            Task.Run(() => callback(state));
         }
 
         /// <summary>
